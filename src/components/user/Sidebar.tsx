@@ -1,32 +1,42 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/authContext";
-import { LayoutDashboard, ClipboardList, Plus, HelpCircle, LogOut } from "lucide-react";
-
-interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Plus,
+  HelpCircle,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard",    icon: LayoutDashboard },
-  { id: "laporan",   label: "Laporan Saya", icon: ClipboardList   },
-  { id: "buat",      label: "Buat Laporan", icon: Plus            },
+  { label: "Dashboard",     icon: LayoutDashboard, href: "/homepage" },
+  { label: "Laporan Saya",  icon: ClipboardList,   href: "/laporan" },
+  { label: "Buat Laporan",  icon: Plus,            href: "/buat-laporan" },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function Sidebar() {
   const { user, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-100 h-screen sticky top-0 z-40 shrink-0">
       {/* Logo */}
       <div className="p-6 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-black text-sm">AR</span>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center shadow-md shadow-indigo-200">
+            <span className="text-white font-black text-xs tracking-tight">AR</span>
           </div>
-          <span className="text-lg font-extrabold">
+          <span className="text-[17px] font-black tracking-tight">
             <span className="text-indigo-600">Aduan</span>
             <span className="text-slate-800">Rakyat</span>
           </span>
@@ -34,35 +44,39 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </div>
 
       {/* User Info */}
-      <div className="p-4 mx-4 mt-4 bg-indigo-50 rounded-2xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-            {user?.name?.slice(0, 2)?.toUpperCase() || "??"}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-bold text-slate-800 text-sm truncate">{user?.name || "Pengguna"}</p>
-            <p className="text-xs text-slate-500 truncate">{user?.email || ""}</p>
+      <div className="mx-4 mt-5">
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-4 border border-indigo-100/60">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-200 shrink-0">
+              {user?.name?.slice(0, 2)?.toUpperCase() || "??"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-slate-800 text-sm truncate leading-snug">{user?.name || "Pengguna"}</p>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email || ""}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1 mt-2">
+      {/* Navigation */}
+      <nav className="flex-1 px-4 mt-6 space-y-1">
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest px-3 mb-3">Menu</p>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = activeTab === item.id;
+          const active = pathname === item.href;
           return (
             <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              key={item.href}
+              onClick={() => router.push(item.href)}
+              className={`relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group ${
                 active
                   ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {item.label}
+              <Icon className={`w-4 h-4 shrink-0 ${active ? "text-white" : "text-slate-400 group-hover:text-indigo-500 transition-colors"}`} />
+              <span className="flex-1 text-left">{item.label}</span>
+              {active && <ChevronRight className="w-3.5 h-3.5 text-white/60" />}
             </button>
           );
         })}
@@ -70,17 +84,16 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
       {/* Bottom */}
       <div className="p-4 border-t border-slate-100 space-y-1">
-        <a
-          href="#"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all"
-        >
-          <HelpCircle className="w-4 h-4" /> Bantuan
-        </a>
+        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all">
+          <HelpCircle className="w-4 h-4" />
+          Bantuan
+        </button>
         <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-all"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all"
         >
-          <LogOut className="w-4 h-4" /> Keluar
+          <LogOut className="w-4 h-4" />
+          Keluar
         </button>
       </div>
     </aside>

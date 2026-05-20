@@ -1,13 +1,13 @@
-// Jika AuthProvider belum ada di root layout, tambahkan seperti ini.
-// File: src/app/layout.tsx
-
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "AduanRakyat – Platform Pengaduan Warga",
-  description: "Laporkan masalah di sekitar Anda. Cepat, transparan, terselesaikan.",
+  title:
+    "AduanRakyat – Platform Pengaduan Warga",
+  description:
+    "Laporkan masalah di sekitar Anda. Cepat, transparan, terselesaikan.",
 };
 
 export default function RootLayout({
@@ -18,12 +18,26 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body>
-        {/*
-          AuthProvider di root agar semua halaman (user, admin, superadmin)
-          bisa akses useAuth() tanpa perlu wrap di masing-masing layout.
-          Hapus AuthProvider di (user)/layout.tsx jika pakai cara ini.
-        */}
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+
+          {/* GLOBAL TOAST */}
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              duration: 3000,
+              style: {
+                borderRadius:
+                  "16px",
+                padding:
+                  "14px 18px",
+                fontWeight:
+                  "500",
+              },
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -2,18 +2,12 @@
 
 import { motion } from "framer-motion";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { useAuth } from "@/context/authContext";
 
-import AdminDashboardSection from "@/components/admin/DashboardSection";
 import AdminLaporanTable from "@/components/admin/LaporanTable";
 
-export default function DashboardPage() {
-  const { user } = useAuth();
-
+export default function LaporanPage() {
   const {
-    stats,
     laporan,
-    loadingStats,
     loadingLaporan,
     updateStatus,
     deleteLaporan,
@@ -24,14 +18,18 @@ export default function DashboardPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <AdminDashboardSection
-        stats={stats}
-        loading={loadingStats}
-        adminName={user?.name}
-      />
+      <div className="mb-6">
+        <h2 className="text-2xl font-black text-slate-900">
+          Semua Laporan
+        </h2>
+
+        <p className="text-slate-400 text-sm mt-1">
+          Kelola dan update status laporan masuk
+        </p>
+      </div>
 
       <AdminLaporanTable
-        laporan={laporan.slice(0, 5)}
+        laporan={laporan}
         loading={loadingLaporan}
         onUpdateStatus={updateStatus}
         onDelete={deleteLaporan}

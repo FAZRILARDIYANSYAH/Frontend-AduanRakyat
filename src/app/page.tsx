@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, 
   Zap, 
   Bell, 
   ArrowRight, 
@@ -20,7 +19,6 @@ import {
   Star,
   Globe,
   Mail,
-  MessageSquare as MessageSquareOutline,
   Share2,
   ArrowUpRight,
   Info,
@@ -232,15 +230,10 @@ export default function AduCepatLandingPage() {
             whileTap={{ scale: 0.9 }} 
             className="flex flex-col items-center group cursor-pointer"
           >
-            {/* Lingkaran Icon:
-               - Base: Putih border tebal sedikit (slate-300)
-               - Hover: Biru Indigo, Shadow, dan Border Indigo Ceria (indigo-400)
-            */}
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-white border-2 border-slate-300 text-slate-400 transition-all duration-300 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-400 group-hover:shadow-lg group-hover:shadow-indigo-100 group-active:bg-indigo-700">
               {React.cloneElement(step.icon, { className: "w-6 h-6 transition-transform group-hover:scale-110" })}
             </div>
             
-            {/* Judul: Hitam ke Biru saat hover */}
             <h3 className="font-bold text-base mb-2 text-slate-800 transition-colors group-hover:text-indigo-600 text-center">
               {step.title}
             </h3>
@@ -267,10 +260,9 @@ export default function AduCepatLandingPage() {
           <motion.div 
             key={idx}
             whileHover={{ y: -8 }}
-            whileTap={{ scale: 0.98 }} // Efek membal saat diklik
+            whileTap={{ scale: 0.98 }}
             className="group p-8 rounded-[2rem] border border-slate-100 bg-white hover:border-indigo-100 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 cursor-pointer"
           >
-            {/* Icon Box - Dikecilkan sedikit */}
             <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-50 transition-colors">
               {feature.icon}
             </div>
@@ -292,13 +284,11 @@ export default function AduCepatLandingPage() {
 
       {/* ── ASLI: Trust / Statistik Section ─────────────────────────────────── */}
     <section id="statistik" className="py-24 bg-white relative overflow-hidden">
-  {/* Dekorasi Background Halus */}
   <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-indigo-50 rounded-full blur-[100px] opacity-60 -z-10" />
 
   <div className="max-w-7xl mx-auto px-6">
     <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
       
-      {/* Teks Deskripsi dengan Animasi Muncul dari Kiri */}
       <motion.div 
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
@@ -315,7 +305,6 @@ export default function AduCepatLandingPage() {
         </p>
       </motion.div>
 
-      {/* Grid Statistik dengan Animasi Muncul dari Bawah satu per satu */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full lg:w-auto">
         {[
           { label: "Laporan Selesai", value: "45k+", color: "from-blue-600 to-indigo-600" },
@@ -331,7 +320,6 @@ export default function AduCepatLandingPage() {
             whileHover={{ y: -5 }}
             className="relative group p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center min-w-[200px]"
           >
-            {/* Dekorasi saat hover */}
             <div className="absolute inset-0 bg-white rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl shadow-indigo-100/50 -z-10" />
             
             <div className={`text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
@@ -348,9 +336,7 @@ export default function AduCepatLandingPage() {
   </div>
 </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── TAMBAHAN 1: Live Reports Feed ───────────────────────────────────── */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── Live Reports Feed ───────────────────────────────────────────────── */}
       <section id="laporan" className="py-24 bg-slate-50/50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -431,9 +417,7 @@ export default function AduCepatLandingPage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── TAMBAHAN 2: Testimonial / Social Proof ──────────────────────────── */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── Testimonial / Social Proof ──────────────────────────────────────── */}
       <section id="testimoni"  className="py-20 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
@@ -490,38 +474,37 @@ export default function AduCepatLandingPage() {
       {/* ── ASLI: Footer ─────────────────────────────────────────────────────── */}
         <footer className="bg-white border-t border-slate-100 pt-20 pb-10">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr_1.5fr] gap-12 mb-16">
         
         {/* Kolom 1: Branding & Deskripsi */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="space-y-6"
+          className="space-y-5"
         >
-          <div className="flex items-center gap-2">
-          <div className="w-18 h-18 relative">
-            <Image
-              src="/images/logo.png"
-              alt="AduanRakyat Logo"
-              fill
-              className="object-contain"
-            />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 relative shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="AduanRakyat Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <span className="text-2xl font-extrabold tracking-tight">
+                <span className="text-indigo-600">Aduan</span>
+                <span className="text-black">Rakyat</span>
+            </span>
           </div>
-          <span className="text-2xl font-extrabold tracking-tight">
-              <span className="text-indigo-600">Aduan</span>
-              <span className="text-black">Rakyat</span>
-          </span>
-          </div>
-          <p className="text-slate-500 text-sm leading-relaxed">
+          <p className="text-slate-500 text-sm leading-relaxed max-w-xs">
             Platform digital terintegrasi untuk menghubungkan suara warga dengan pemerintah secara transparan dan cepat demi lingkungan yang lebih baik.
           </p>
           
-          {/* Ikon Pengganti Sosmed (Aman & Anti-Error) */}
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             {[Globe, Mail, MessageSquare, Share2].map((Icon, i) => (
-              <a key={i} href="#" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white transition-all duration-300">
-                <Icon className="w-5 h-5" />
+              <a key={i} href="#" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white transition-all duration-300">
+                <Icon className="w-4 h-4" />
               </a>
             ))}
           </div>

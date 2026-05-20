@@ -12,7 +12,7 @@ import api from "@/lib/axios";
 
 export type StatusType =
   | "menunggu"
-  | "diverifikasi"
+  | "verifikasi"
   | "diproses"
   | "selesai"
   | "ditolak";
@@ -21,25 +21,15 @@ export type StatusType =
 
 export interface UserReport {
   id: string;
-
   judul: string;
-
   kategori: string;
-
   lokasi: string;
-
   status: StatusType;
-
   deskripsi: string;
-
   foto?: string;
-
   createdAt: string;
-
   updatedAt: string;
-
   tanggapan?: string;
-
   instansi?: string;
 }
 
@@ -47,21 +37,48 @@ export interface UserReport {
 
 export interface UserStats {
   total: number;
-
   selesai: number;
-
   diproses: number;
-
   menunggu: number;
-
+  verifikasi: number; // ✅ tambah ini
   ditolak: number;
+}
+
+// ================= NORMALIZE STATUS =================
+
+function normalizeStatus(
+  status: string
+): StatusType {
+  const s =
+    status?.toLowerCase()?.trim();
+
+  switch (s) {
+    case "proses":
+    case "diproses":
+      return "diproses";
+
+    case "verifikasi":
+    case "diverifikasi":
+      return "verifikasi";
+
+    case "selesai":
+      return "selesai";
+
+    case "ditolak":
+      return "ditolak";
+
+    case "menunggu":
+    case "pending":
+      return "menunggu";
+
+    default:
+      return "menunggu";
+  }
 }
 
 // ================= HOOK =================
 
 export function useLaporan() {
-  // ================= STATE =================
-
   const [reports, setReports] =
     useState<UserReport[]>([]);
 
@@ -71,6 +88,7 @@ export function useLaporan() {
       selesai: 0,
       diproses: 0,
       menunggu: 0,
+      verifikasi: 0, // ✅ tambah ini
       ditolak: 0,
     });
 
@@ -80,95 +98,95 @@ export function useLaporan() {
   const [error, setError] =
     useState<string | null>(null);
 
-  // ================= FETCH REPORTS =================
+  // ================= FETCH =================
 
-  const fetchReports = useCallback(
-    async (): Promise<void> => {
+  const fetchReports =
+    useCallback(async (): Promise<void> => {
       try {
         setLoading(true);
-
         setError(null);
 
-        // request backend
-        const res = await api.get(
-          "/laporan"
-        );
+        const res =
+          await api.get(
+            "/laporan"
+          );
 
-        // backend return array
         const rawData =
           res.data ?? [];
 
-        // mapping backend -> frontend
         const data: UserReport[] =
           rawData.map(
             (item: any) => ({
-              id: item.id,
-
+              id: String(item.id),
               judul:
                 item.judul_laporan,
-
               kategori:
                 item.kategori,
-
               lokasi:
                 item.lokasi,
 
               status:
-                item.status,
+                normalizeStatus(
+                  item.status
+                ),
 
               deskripsi:
                 item.deskripsi,
-
-              foto: item.foto,
-
+              foto:
+                item.foto,
               createdAt:
                 item.created_at,
-
               updatedAt:
                 item.updated_at ??
                 item.created_at,
-
               tanggapan:
                 item.tanggapan,
-
               instansi:
                 item.instansi,
             })
           );
 
-        // simpan laporan
         setReports(data);
 
-        // ================= HITUNG STATS =================
+        // ================= STATS =================
 
         setStats({
           total: data.length,
 
-          selesai: data.filter(
-            (r) =>
-              r.status ===
-              "selesai"
-          ).length,
+          selesai:
+            data.filter(
+              (r) =>
+                r.status ===
+                "selesai"
+            ).length,
 
-          diproses: data.filter(
-            (r) =>
-              r.status ===
-                "diproses" ||
-              r.status ===
-                "diverifikasi"
-          ).length,
+          diproses:
+            data.filter(
+              (r) =>
+                r.status ===
+                "diproses"
+            ).length,
 
-          menunggu: data.filter(
-            (r) =>
-              r.status ===
-              "menunggu"
-          ).length,
+          menunggu:
+            data.filter(
+              (r) =>
+                r.status ===
+                "menunggu"
+            ).length,
 
-          ditolak: data.filter(
-            (r) =>
-              r.status ===
-              "ditolak"
-          ).length,
+          verifikasi:
+            data.filter(
+              (r) =>
+                r.status ===
+                "verifikasi"
+            ).length, // ✅ ini yang bikin muncul 1
+
+          ditolak:
+            data.filter(
+              (r) =>
+                r.status ===
+                "ditolak"
+            ).length,
         });
       } catch (err: any) {
         console.log(
@@ -184,9 +202,7 @@ export function useLaporan() {
       } finally {
         setLoading(false);
       }
-    },
-    []
-  );
+    }, []);
 
   // ================= FIRST LOAD =================
 
@@ -201,6 +217,7 @@ export function useLaporan() {
     stats,
     loading,
     error,
-    refetch: fetchReports,
+    refetch:
+      fetchReports,
   };
 }
