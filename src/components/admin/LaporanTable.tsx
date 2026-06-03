@@ -6,13 +6,20 @@ import {
   Search, Filter, Trash2, X, CheckCircle, AlertCircle,
   MapPin, Calendar, User, Hash, ChevronDown, Save,
   MessageSquare, Image as ImageIcon, RefreshCw, Pencil,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import StatusBadge, { STATUS_CONFIG, getCategoryIcon } from "./StatusBadge";
 import type { AdminLaporan } from "@/types/admin";
 
 const STATUS_OPTIONS = ["menunggu", "verifikasi", "diproses", "selesai", "ditolak"];
+const ITEMS_PER_PAGE = 6;
 
-// ===================== UPDATE MODAL =====================
+// ── Helpers ──────────────────────────────────────────────
+
+const fmt = (date?: string | Date | null) =>
+  date ? new Date(date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—";
+
+// ── UpdateModal ───────────────────────────────────────────
 
 interface UpdateModalProps {
   laporan: AdminLaporan;
@@ -27,8 +34,7 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const cat = getCategoryIcon(laporan.kategori);
-  const CatIcon = cat.icon;
+  const { icon: CatIcon, bg, color } = getCategoryIcon(laporan.kategori);
 
   const handleSave = async () => {
     try {
@@ -46,9 +52,7 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
@@ -66,14 +70,15 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
           <div className="relative flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="flex items-center gap-1.5 bg-white/20 px-2.5 py-1 rounded-lg">
-                  <Hash className="w-3 h-3 text-white/80" />
-                  <span className="text-xs font-bold text-white/90">{laporan.id}</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/20">
-                  <CatIcon className="w-3 h-3 text-white/80" />
-                  <span className="text-xs font-bold text-white/90">{laporan.kategori || "Umum"}</span>
-                </div>
+                {[
+                  { Icon: Hash, label: `${laporan.id}` },
+                  { Icon: CatIcon, label: laporan.kategori || "Umum" },
+                ].map(({ Icon, label }) => (
+                  <div key={label} className="flex items-center gap-1.5 bg-white/20 px-2.5 py-1 rounded-lg">
+                    <Icon className="w-3 h-3 text-white/80" />
+                    <span className="text-xs font-bold text-white/90">{label}</span>
+                  </div>
+                ))}
               </div>
               <h2 className="text-lg font-black text-white leading-snug">{laporan.judul_laporan}</h2>
               {laporan.user_name && (
@@ -82,10 +87,7 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
                 </p>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors shrink-0"
-            >
+            <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors shrink-0">
               <X className="w-4 h-4 text-white" />
             </button>
           </div>
@@ -94,22 +96,18 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
         {/* Body */}
         <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-start gap-2.5 p-3 bg-slate-50 rounded-xl">
-              <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Lokasi</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{laporan.lokasi || "—"}</p>
+            {[
+              { Icon: MapPin, label: "Lokasi", value: laporan.lokasi || "—" },
+              { Icon: Calendar, label: "Tanggal", value: fmt(laporan.tanggal_kejadian) },
+            ].map(({ Icon, label, value }) => (
+              <div key={label} className="flex items-start gap-2.5 p-3 bg-slate-50 rounded-xl">
+                <Icon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{label}</p>
+                  <p className="text-sm font-semibold text-slate-700 mt-0.5">{value}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-2.5 p-3 bg-slate-50 rounded-xl">
-              <Calendar className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tanggal</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">
-                  {new Date(laporan.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div>
@@ -132,8 +130,7 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Update Status</p>
             <div className="relative">
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={status} onChange={(e) => setStatus(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none transition-all"
               >
                 {STATUS_OPTIONS.map((s) => (
@@ -149,10 +146,8 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
               <MessageSquare className="w-3 h-3" /> Tanggapan Instansi
             </p>
             <textarea
-              value={tanggapan}
-              onChange={(e) => setTanggapan(e.target.value)}
-              rows={3}
-              placeholder="Tulis tanggapan resmi untuk pelapor..."
+              value={tanggapan} onChange={(e) => setTanggapan(e.target.value)}
+              rows={3} placeholder="Tulis tanggapan resmi untuk pelapor..."
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none resize-none transition-all"
             />
           </div>
@@ -179,19 +174,12 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
         <div className="px-6 py-4 border-t border-slate-100 flex gap-3">
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={loading}
+            onClick={handleSave} disabled={loading}
             className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200/60 text-sm"
           >
-            {loading
-              ? <><RefreshCw className="w-4 h-4 animate-spin" /> Menyimpan...</>
-              : <><Save className="w-4 h-4" /> Simpan Perubahan</>
-            }
+            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Menyimpan...</> : <><Save className="w-4 h-4" /> Simpan Perubahan</>}
           </motion.button>
-          <button
-            onClick={onClose}
-            className="px-5 py-3 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all text-sm"
-          >
+          <button onClick={onClose} className="px-5 py-3 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all text-sm">
             Batal
           </button>
         </div>
@@ -200,7 +188,7 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
   );
 }
 
-// ===================== DELETE CONFIRM =====================
+// ── DeleteConfirm ─────────────────────────────────────────
 
 interface DeleteConfirmProps {
   label: string;
@@ -229,16 +217,11 @@ function DeleteConfirm({ label, onConfirm, onCancel, loading }: DeleteConfirmPro
           <span className="font-semibold text-slate-700">"{label}"</span> akan dihapus permanen dan tidak bisa dikembalikan.
         </p>
         <div className="flex gap-3 mt-5">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all text-sm"
-          >
+          <button onClick={onCancel} className="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all text-sm">
             Batal
           </button>
           <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={onConfirm}
-            disabled={loading}
+            whileTap={{ scale: 0.97 }} onClick={onConfirm} disabled={loading}
             className="flex-1 py-3 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all text-sm"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
@@ -250,7 +233,7 @@ function DeleteConfirm({ label, onConfirm, onCancel, loading }: DeleteConfirmPro
   );
 }
 
-// ===================== LAPORAN ROW =====================
+// ── LaporanRow ────────────────────────────────────────────
 
 interface LaporanRowProps {
   laporan: AdminLaporan;
@@ -259,20 +242,14 @@ interface LaporanRowProps {
 }
 
 function LaporanRow({ laporan, onUpdate, onDelete }: LaporanRowProps) {
-  const cat = getCategoryIcon(laporan.kategori);
-  const CatIcon = cat.icon;
+  const { icon: CatIcon, bg, color } = getCategoryIcon(laporan.kategori);
 
   return (
-    <motion.tr
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="border-b border-slate-100 hover:bg-indigo-50/30 transition-colors"
-    >
-      {/* Laporan */}
+    <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b border-slate-100 hover:bg-indigo-50/30 transition-colors">
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 ${cat.bg} rounded-xl flex items-center justify-center shrink-0`}>
-            <CatIcon className={`w-4 h-4 ${cat.color}`} />
+          <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center shrink-0`}>
+            <CatIcon className={`w-4 h-4 ${color}`} />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-800 truncate max-w-[200px]">{laporan.judul_laporan}</p>
@@ -280,59 +257,30 @@ function LaporanRow({ laporan, onUpdate, onDelete }: LaporanRowProps) {
           </div>
         </div>
       </td>
-
-      {/* Pelapor */}
       <td className="px-4 py-4">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <span className="text-[10px] font-black text-indigo-600">
-              {laporan.user_name?.charAt(0)?.toUpperCase() || "?"}
-            </span>
+            <span className="text-[10px] font-black text-indigo-600">{laporan.user_name?.charAt(0)?.toUpperCase() || "?"}</span>
           </div>
           <p className="text-xs text-slate-600 font-medium">{laporan.user_name || "—"}</p>
         </div>
       </td>
-
-      {/* Lokasi */}
       <td className="px-4 py-4">
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <MapPin className="w-3 h-3 shrink-0 text-slate-400" />
           <span className="truncate max-w-[120px]">{laporan.lokasi || "—"}</span>
         </div>
       </td>
-
-      {/* Status */}
-      <td className="px-4 py-4">
-        <StatusBadge status={laporan.status} />
-      </td>
-
-      {/* Tanggal */}
-      <td className="px-4 py-4">
-        <p className="text-xs text-slate-400">
-          {new Date(laporan.created_at).toLocaleDateString("id-ID", {
-            day: "numeric", month: "short", year: "numeric",
-          })}
-        </p>
-      </td>
-
-      {/* Aksi — selalu terlihat */}
+      <td className="px-4 py-4"><StatusBadge status={laporan.status} /></td>
+      <td className="px-4 py-4"><p className="text-xs text-slate-400">{fmt(laporan.tanggal_kejadian)}</p></td>
       <td className="px-4 py-4">
         <div className="flex items-center gap-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onUpdate(laporan)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 text-xs font-bold rounded-xl transition-colors"
-          >
-            <Pencil className="w-3 h-3" />
-            Update
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onUpdate(laporan)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 text-xs font-bold rounded-xl transition-colors">
+            <Pencil className="w-3 h-3" /> Update
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onDelete(laporan)}
-            className="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 rounded-xl transition-colors"
-          >
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(laporan)}
+            className="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 rounded-xl transition-colors">
             <Trash2 className="w-3.5 h-3.5" />
           </motion.button>
         </div>
@@ -341,7 +289,7 @@ function LaporanRow({ laporan, onUpdate, onDelete }: LaporanRowProps) {
   );
 }
 
-// ===================== MAIN TABLE =====================
+// ── AdminLaporanTable ─────────────────────────────────────
 
 interface AdminLaporanTableProps {
   laporan: AdminLaporan[];
@@ -350,26 +298,23 @@ interface AdminLaporanTableProps {
   onDelete: (id: number) => Promise<void>;
 }
 
-export default function AdminLaporanTable({
-  laporan, loading, onUpdateStatus, onDelete,
-}: AdminLaporanTableProps) {
+export default function AdminLaporanTable({ laporan, loading, onUpdateStatus, onDelete }: AdminLaporanTableProps) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("semua");
   const [updateTarget, setUpdateTarget] = useState<AdminLaporan | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminLaporan | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    return laporan.filter((l) => {
-      const matchSearch =
-        l.judul_laporan?.toLowerCase().includes(search.toLowerCase()) ||
-        l.user_name?.toLowerCase().includes(search.toLowerCase()) ||
-        l.lokasi?.toLowerCase().includes(search.toLowerCase());
-      const matchStatus =
-        filterStatus === "semua" || l.status?.toLowerCase() === filterStatus;
-      return matchSearch && matchStatus;
-    });
-  }, [laporan, search, filterStatus]);
+  const filtered = useMemo(() => laporan.filter((l) => {
+    const q = search.toLowerCase();
+    const matchSearch = [l.judul_laporan, l.user_name, l.lokasi].some((v) => v?.toLowerCase().includes(q));
+    const matchStatus = filterStatus === "semua" || l.status?.toLowerCase() === filterStatus;
+    return matchSearch && matchStatus;
+  }), [laporan, search, filterStatus]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedData = useMemo(() => filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [filtered, currentPage]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -377,11 +322,12 @@ export default function AdminLaporanTable({
       setDeleting(true);
       await onDelete(deleteTarget.id);
       setDeleteTarget(null);
-    } catch {
     } finally {
       setDeleting(false);
     }
   };
+
+  const resetPage = () => setCurrentPage(1);
 
   return (
     <>
@@ -390,35 +336,24 @@ export default function AdminLaporanTable({
         <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-base font-black text-slate-900">Manajemen Laporan</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {filtered.length} laporan ditemukan
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">{filtered.length} laporan ditemukan</p>
           </div>
-
           <div className="flex items-center gap-3">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                type="text" value={search} onChange={(e) => { setSearch(e.target.value); resetPage(); }}
                 placeholder="Cari laporan..."
                 className="pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-all w-48"
               />
             </div>
-
-            {/* Filter */}
             <div className="relative">
               <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
+                value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}
                 className="pl-4 pr-8 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-400 outline-none appearance-none font-medium text-slate-700 transition-all"
               >
                 <option value="semua">Semua Status</option>
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{STATUS_CONFIG[s]?.label}</option>
-                ))}
+                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_CONFIG[s]?.label}</option>)}
               </select>
               <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
@@ -430,12 +365,9 @@ export default function AdminLaporanTable({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/70">
-                <th className="px-5 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Laporan</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pelapor</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lokasi</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tanggal</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aksi</th>
+                {["Laporan", "Pelapor", "Lokasi", "Status", "Tanggal", "Aksi"].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -443,13 +375,11 @@ export default function AdminLaporanTable({
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-b border-slate-50">
                     {Array.from({ length: 6 }).map((__, j) => (
-                      <td key={j} className="px-5 py-4">
-                        <div className="h-4 bg-slate-100 rounded-lg animate-pulse" />
-                      </td>
+                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-lg animate-pulse" /></td>
                     ))}
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
                     <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
@@ -459,38 +389,42 @@ export default function AdminLaporanTable({
                     <p className="text-slate-300 text-xs mt-1">Coba ubah filter atau kata kunci pencarian</p>
                   </td>
                 </tr>
-              ) : (
-                filtered.map((l) => (
-                  <LaporanRow
-                    key={l.id}
-                    laporan={l}
-                    onUpdate={setUpdateTarget}
-                    onDelete={setDeleteTarget}
-                  />
-                ))
-              )}
+              ) : paginatedData.map((l) => (
+                <LaporanRow key={l.id} laporan={l} onUpdate={setUpdateTarget} onDelete={setDeleteTarget} />
+              ))}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && filtered.length > 0 && (
+          <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-xs text-slate-400">
+              Halaman <span className="font-bold text-slate-600">{currentPage}</span> dari <span className="font-bold text-slate-600">{totalPages}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}
+                className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button key={i + 1} onClick={() => setCurrentPage(i + 1)}
+                  className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${currentPage === i + 1 ? "bg-indigo-600 text-white" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+                  {i + 1}
+                </button>
+              ))}
+              <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}
+                className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
-        {updateTarget && (
-          <UpdateModal
-            laporan={updateTarget}
-            onClose={() => setUpdateTarget(null)}
-            onSave={onUpdateStatus}
-          />
-        )}
-        {deleteTarget && (
-          <DeleteConfirm
-            label={deleteTarget.judul_laporan}
-            onConfirm={handleDelete}
-            onCancel={() => setDeleteTarget(null)}
-            loading={deleting}
-          />
-        )}
+        {updateTarget && <UpdateModal laporan={updateTarget} onClose={() => setUpdateTarget(null)} onSave={onUpdateStatus} />}
+        {deleteTarget && <DeleteConfirm label={deleteTarget.judul_laporan} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} loading={deleting} />}
       </AnimatePresence>
     </>
   );

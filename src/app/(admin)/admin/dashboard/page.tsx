@@ -2,22 +2,36 @@
 
 import { motion } from "framer-motion";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { useAuth } from "@/context/authContext";
+import { useSession } from "next-auth/react";
+import { useLaporan } from "@/hooks/useLaporan";
 
 import AdminDashboardSection from "@/components/admin/DashboardSection";
-import AdminLaporanTable from "@/components/admin/LaporanTable";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+    const { data: session } = useSession(); 
 
   const {
     stats,
-    laporan,
     loadingStats,
-    loadingLaporan,
-    updateStatus,
-    deleteLaporan,
   } = useAdminDashboard();
+
+  const { reports } = useLaporan("feed");
+
+  // mapping UserReport -> AdminLaporan
+  const dashboardLaporan = reports.map((r) => ({
+    id: Number(r.id),
+    judul_laporan: r.judul,
+    kategori: r.kategori,
+    deskripsi: r.deskripsi,
+    lokasi: r.lokasi,
+    status: r.status,
+    foto: r.foto ?? null,
+    tanggapan: r.tanggapan ?? null,
+    tanggapan_at: null,
+    created_at: r.createdAt,
+    tanggal_kejadian: r.tanggal_kejadian ?? null,
+    user_name: r.instansi ?? "User",
+  }));
 
   return (
     <motion.div
@@ -27,14 +41,8 @@ export default function DashboardPage() {
       <AdminDashboardSection
         stats={stats}
         loading={loadingStats}
-        adminName={user?.name}
-      />
-
-      <AdminLaporanTable
-        laporan={laporan.slice(0, 5)}
-        loading={loadingLaporan}
-        onUpdateStatus={updateStatus}
-        onDelete={deleteLaporan}
+        adminName={session?.user?.name?.split(" ")[0] || "Admin"}
+        laporan={dashboardLaporan}
       />
     </motion.div>
   );

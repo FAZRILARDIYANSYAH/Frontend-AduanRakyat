@@ -1,346 +1,139 @@
+// src/components/auth/Register/RegisterForm.tsx
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import {
-  User,
-  Mail,
-  Lock,
-  Phone,
-  CreditCard,
-  ArrowRight,
-} from "lucide-react";
-
-import { registerUser } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import { User, Mail, Lock, Phone, CreditCard, Eye, EyeOff, UserPlus } from "lucide-react";
+import toast from "react-hot-toast";
+import { registerUser } from "@/services/authService";
+
+function Field({ label, name, type = "text", value, onChange, placeholder, error, icon, rightSlot }: {
+  label: string; name: string; type?: string; value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string; error?: string; icon: React.ReactNode; rightSlot?: React.ReactNode;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <label style={{ fontSize: 13, fontWeight: 700, color: "#334155", display: "block", marginBottom: 7 }}>{label}</label>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, height: 50,
+        padding: "0 14px", borderRadius: 12,
+        border: `1.5px solid ${error ? "#f87171" : focused ? "#2563eb" : "#e2e8f0"}`,
+        boxShadow: error ? "0 0 0 3px rgba(248,113,113,0.1)" : focused ? "0 0 0 3px rgba(37,99,235,0.1)" : "none",
+        background: "#fff", transition: "border-color 0.15s, box-shadow 0.15s",
+      }}>
+        <span style={{ color: "#94a3b8", display: "flex", flexShrink: 0 }}>{icon}</span>
+        <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{ flex: 1, height: "100%", border: "none", outline: "none", fontSize: 14, color: "#0f172a", background: "transparent" }} />
+        {rightSlot}
+      </div>
+      {error && <p style={{ color: "#ef4444", fontSize: 12, marginTop: 5 }}>{error}</p>}
+    </div>
+  );
+}
 
 export default function RegisterForm() {
   const router = useRouter();
+  const [data, setData] = useState({ name: "", email: "", password: "", nik: "", no_tlp: "" });
+  const [errors, setErrors] = useState({ name: "", email: "", password: "", nik: "", no_tlp: "" });
+  const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
-  // FORM DATA
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    nik: "",
-    no_tlp: "",
-  });
-
-  // ERROR STATE
-  const [errors, setErrors] = useState({
-    name: "",
-    email: "",
-    password: "",
-    nik: "",
-    no_tlp: "",
-  });
-
-  const [loading, setLoading] =
-    useState(false);
-
-  // HANDLE INPUT
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-
-    // HAPUS ERROR
-    setErrors({
-      ...errors,
-      [e.target.name]: "",
-    });
+  const change = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData({ ...data, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  // HANDLE REGISTER
-  const handleRegister = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    let newErrors = {
-      name: "",
-      email: "",
-      password: "",
-      nik: "",
-      no_tlp: "",
+    const errs = {
+      name: !data.name ? "Nama wajib diisi" : "",
+      email: !data.email ? "Email wajib diisi" : "",
+      password: !data.password
+        ? "Password wajib diisi"
+        : data.password.length < 6
+        ? "Password minimal 6 karakter"
+        : "",
+      nik: !data.nik
+        ? "NIK wajib diisi"
+        : !/^[0-9]+$/.test(data.nik)
+        ? "NIK hanya boleh angka"
+        : data.nik.length < 16
+        ? "NIK minimal 16 digit"
+        : "",
+      no_tlp: !data.no_tlp
+        ? "Nomor telepon wajib diisi"
+        : !/^[0-9]+$/.test(data.no_tlp)
+        ? "Nomor telepon hanya boleh angka"
+        : data.no_tlp.length < 10
+        ? "Nomor telepon minimal 10 digit"
+        : "",
     };
-
-    // VALIDASI
-    if (!formData.name) {
-      newErrors.name =
-        "Nama wajib diisi";
-    }
-
-    if (!formData.email) {
-      newErrors.email =
-        "Email wajib diisi";
-    }
-
-    if (!formData.password) {
-      newErrors.password =
-        "Password wajib diisi";
-    }
-
-    if (!formData.nik) {
-      newErrors.nik =
-        "NIK wajib diisi";
-    }
-
-    if (!formData.no_tlp) {
-      newErrors.no_tlp =
-        "Nomor telepon wajib diisi";
-    }
-
-    setErrors(newErrors);
-
-    // STOP JIKA ADA ERROR
-    if (
-      newErrors.name ||
-      newErrors.email ||
-      newErrors.password ||
-      newErrors.nik ||
-      newErrors.no_tlp
-    ) {
-      return;
-    }
-
+    setErrors(errs);
+    if (Object.values(errs).some(Boolean)) return;
     try {
       setLoading(true);
-
-      const response =
-        await registerUser(formData);
-
-      alert(response.message);
-      // REDIRECT HOMEPAGE USER
+      const res = await registerUser(data);
+      toast.success(res.message || "Registrasi berhasil!");
       router.push("/homepage");
-
-    } catch (error: any) {
-      console.log(error);
-
-      alert(
-        error?.response?.data?.message ||
-        "Register gagal"
-      );
-
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Register gagal");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
-
-      {/* HEADER */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">
-          Buat Akun
-        </h1>
-
-        <p className="text-slate-500 mt-2">
-          Daftar untuk mulai membuat laporan
-        </p>
+    <div style={{ width: "100%", maxWidth: 400 }}>
+      <div style={{ marginBottom: 22 }}>
+        <h2 style={{ fontSize: 30, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.03em", marginBottom: 6 }}>Buat Akun</h2>
+        <p style={{ color: "#64748b", fontSize: 14 }}>Daftar untuk mulai membuat laporan pengaduan.</p>
       </div>
 
-      {/* FORM */}
-      <form
-        onSubmit={handleRegister}
-        className="space-y-5"
-      >
+      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+        <Field label="Nama Lengkap" name="name" value={data.name} onChange={change}
+          placeholder="Masukkan nama lengkap" error={errors.name} icon={<User size={16} strokeWidth={2} />} />
+        <Field label="Email" name="email" type="email" value={data.email} onChange={change}
+          placeholder="Masukkan email" error={errors.email} icon={<Mail size={16} strokeWidth={2} />} />
+        <Field label="Password" name="password" type={showPw ? "text" : "password"} value={data.password}
+          onChange={change} placeholder="Buat password" error={errors.password}
+          icon={<Lock size={16} strokeWidth={2} />}
+          rightSlot={
+            <button type="button" onClick={() => setShowPw(!showPw)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", padding: 0 }}>
+              {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          } />
+        <Field label="NIK" name="nik" value={data.nik} onChange={change}
+          placeholder="16 digit NIK KTP" error={errors.nik} icon={<CreditCard size={16} strokeWidth={2} />} />
+        <Field label="Nomor Telepon" name="no_tlp" value={data.no_tlp} onChange={change}
+          placeholder="08xxxxxxxxxx" error={errors.no_tlp} icon={<Phone size={16} strokeWidth={2} />} />
 
-        {/* NAMA */}
-        <div>
-          <label className="text-sm font-semibold text-slate-700">
-            Nama Lengkap
-          </label>
-
-          <div
-            className={`mt-2 flex items-center rounded-xl px-4 h-12 border
-            ${
-              errors.name
-                ? "border-red-500"
-                : "border-slate-200"
-            }`}
-          >
-            <User className="w-5 h-5 text-slate-400" />
-
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Masukkan nama lengkap"
-              className="w-full h-full outline-none px-3 text-sm bg-transparent"
-            />
-          </div>
-
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-2">
-              {errors.name}
-            </p>
-          )}
-        </div>
-
-        {/* EMAIL */}
-        <div>
-          <label className="text-sm font-semibold text-slate-700">
-            Email
-          </label>
-
-          <div
-            className={`mt-2 flex items-center rounded-xl px-4 h-12 border
-            ${
-              errors.email
-                ? "border-red-500"
-                : "border-slate-200"
-            }`}
-          >
-            <Mail className="w-5 h-5 text-slate-400" />
-
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Masukkan email"
-              className="w-full h-full outline-none px-3 text-sm bg-transparent"
-            />
-          </div>
-
-          {errors.email && (
-            <p className="text-red-500 text-xs mt-2">
-              {errors.email}
-            </p>
-          )}
-        </div>
-
-        {/* PASSWORD */}
-        <div>
-          <label className="text-sm font-semibold text-slate-700">
-            Password
-          </label>
-
-          <div
-            className={`mt-2 flex items-center rounded-xl px-4 h-12 border
-            ${
-              errors.password
-                ? "border-red-500"
-                : "border-slate-200"
-            }`}
-          >
-            <Lock className="w-5 h-5 text-slate-400" />
-
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Masukkan password"
-              className="w-full h-full outline-none px-3 text-sm bg-transparent"
-            />
-          </div>
-
-          {errors.password && (
-            <p className="text-red-500 text-xs mt-2">
-              {errors.password}
-            </p>
-          )}
-        </div>
-
-        {/* NIK */}
-        <div>
-          <label className="text-sm font-semibold text-slate-700">
-            NIK
-          </label>
-
-          <div
-            className={`mt-2 flex items-center rounded-xl px-4 h-12 border
-            ${
-              errors.nik
-                ? "border-red-500"
-                : "border-slate-200"
-            }`}
-          >
-            <CreditCard className="w-5 h-5 text-slate-400" />
-
-            <input
-              type="text"
-              name="nik"
-              value={formData.nik}
-              onChange={handleChange}
-              placeholder="Masukkan NIK"
-              className="w-full h-full outline-none px-3 text-sm bg-transparent"
-            />
-          </div>
-
-          {errors.nik && (
-            <p className="text-red-500 text-xs mt-2">
-              {errors.nik}
-            </p>
-          )}
-        </div>
-
-        {/* NO TELP */}
-        <div>
-          <label className="text-sm font-semibold text-slate-700">
-            Nomor Telepon
-          </label>
-
-          <div
-            className={`mt-2 flex items-center rounded-xl px-4 h-12 border
-            ${
-              errors.no_tlp
-                ? "border-red-500"
-                : "border-slate-200"
-            }`}
-          >
-            <Phone className="w-5 h-5 text-slate-400" />
-
-            <input
-              type="text"
-              name="no_tlp"
-              value={formData.no_tlp}
-              onChange={handleChange}
-              placeholder="Masukkan nomor telepon"
-              className="w-full h-full outline-none px-3 text-sm bg-transparent"
-            />
-          </div>
-
-          {errors.no_tlp && (
-            <p className="text-red-500 text-xs mt-2">
-              {errors.no_tlp}
-            </p>
-          )}
-        </div>
-
-        {/* BUTTON */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 transition rounded-xl text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+        <button type="submit" disabled={loading} style={{
+          width: "100%", height: 50, background: loading ? "#93c5fd" : "#2563eb",
+          border: "none", borderRadius: 12, cursor: loading ? "not-allowed" : "pointer",
+          color: "#fff", fontSize: 14, fontWeight: 700,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          boxShadow: "0 8px 24px rgba(37,99,235,0.22)", transition: "background 0.15s", marginTop: 6,
+        }}
+          onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = "#1d4ed8"; }}
+          onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = "#2563eb"; }}
         >
-          {loading ? (
-            "Loading..."
-          ) : (
-            <>
-              Daftar
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          {loading
+            ? <><div style={{ width: 15, height: 15, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "auth-spin 0.6s linear infinite" }} />Mendaftarkan...</>
+            : <><UserPlus size={16} />Daftar Sekarang</>}
         </button>
       </form>
 
-      {/* LINK LOGIN */}
-      <p className="text-sm text-center text-slate-500 mt-6">
+      <p style={{ textAlign: "center", fontSize: 13, color: "#64748b", marginTop: 20 }}>
         Sudah punya akun?{" "}
-        <Link
-          href="/auth/login"
-          className="text-indigo-600 font-semibold hover:underline"
+        <button
+          onClick={() => router.push("/auth/login")}
+          type="button"
+          style={{ color: "#2563eb", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontSize: 13 }}
         >
           Masuk
-        </Link>
+        </button>
       </p>
     </div>
   );

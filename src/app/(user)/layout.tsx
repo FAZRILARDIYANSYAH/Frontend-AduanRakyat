@@ -1,13 +1,13 @@
 "use client";
 
 import Sidebar from "@/components/user/Sidebar";
-import { AuthProvider } from "@/context/authContext";
 import { Bell } from "lucide-react";
-import { useAuth } from "@/context/authContext";
+import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 function Header() {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const pathname = usePathname();
 
   const title =
@@ -62,18 +62,16 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-[#F8FAFC] flex">
-        <Sidebar />
+    <div className="min-h-screen bg-[#F8FAFC] flex">
+      <Sidebar />
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <Header />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header />
 
-          <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
-            {children}
-          </main>
-        </div>
+        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+          {children}
+        </main>
       </div>
-    </AuthProvider>
+    </div>
   );
 }

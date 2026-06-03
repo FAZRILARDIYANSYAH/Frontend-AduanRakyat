@@ -3,39 +3,52 @@
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/context/authContext";
+import { useSession } from "next-auth/react";
 import { useLaporan } from "@/hooks/useLaporan";
 
 import DashboardSection from "@/components/user/DashboardSection";
-import ReportCard from "@/components/user/ReportCard";
+import FeedSection from "@/components/user/FeedSection";
 
 export default function HomepagePage() {
   const router = useRouter();
 
-  const { user } = useAuth();
+  const { data: session, status } = useSession();
+
+  const user = session?.user;
+
+  const authLoading = status === "loading";
+
+  console.log(user);
 
   const {
-    reports,
     stats,
     loading,
   } = useLaporan();
 
+  if (authLoading) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto">
+        <div className="h-52 rounded-3xl bg-slate-100 animate-pulse" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto space-y-10">
 
       <DashboardSection
         stats={stats}
         loading={loading}
-        userName={user?.name}
+        userName={session?.user?.name ?? "User"}
         onBuat={() =>
           router.push("/buat-laporan")
         }
       />
 
-      <div className="mt-8">
+      <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-extrabold text-slate-900">
-            Laporan Terkini
+            Feed Laporan
           </h2>
 
           <button
@@ -45,30 +58,11 @@ export default function HomepagePage() {
             className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
           >
             Lihat Semua
-
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {loading ? (
-          <div className="grid md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-40 bg-white rounded-2xl border animate-pulse"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {reports.slice(0, 4).map((item) => (
-              <ReportCard
-                key={item.id}
-                report={item}
-              />
-            ))}
-          </div>
-        )}
+        <FeedSection />
       </div>
     </div>
   );

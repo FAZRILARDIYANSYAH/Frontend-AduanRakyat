@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -19,7 +20,14 @@ import {
   AlignLeft,
 } from "lucide-react";
 
+
 import api from "@/lib/axios";
+const MapPicker = dynamic(
+  () => import("@/components/MapPicker"),
+  {
+    ssr: false,
+  }
+);
 
 // ================= TYPES =================
 
@@ -256,19 +264,41 @@ export default function FormLaporan({ onSuccess }: { onSuccess: () => void }) {
               </div>
             </div>
 
-            {/* Lokasi */}
+           {/* Lokasi */}
             <div className="md:col-span-2">
-              <FieldLabel icon={MapPin} text="Lokasi" />
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <FieldLabel
+                icon={MapPin}
+                text="Lokasi"
+              />
+
+              <div className="relative mb-4">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
+
                 <input
                   type="text"
                   value={form.lokasi}
-                  onChange={(e) => setForm((f) => ({ ...f, lokasi: e.target.value }))}
-                  placeholder="Masukkan lokasi kejadian secara spesifik"
+                  readOnly
+                  placeholder="Klik lokasi pada map"
                   className={`${inputStyle} pl-10`}
                 />
               </div>
+
+              <MapPicker
+                onSelectLocation={(
+                  lokasi: string
+                ) =>
+                  setForm((f) => ({
+                    ...f,
+                    lokasi,
+                  }))
+                }
+              />
+
+              <p className="text-xs text-slate-400 mt-2">
+                Klik pada map untuk
+                memilih lokasi
+                kejadian.
+              </p>
             </div>
 
             {/* Deskripsi */}

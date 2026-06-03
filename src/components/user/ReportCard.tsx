@@ -9,7 +9,7 @@ interface ReportCardProps {
   report: UserReport;
   onClick?: (report: UserReport) => void;
 }
-
+  
 function ProgressBar({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status?.toLowerCase()] ?? STATUS_CONFIG.menunggu;
   const steps = ["menunggu", "verifikasi", "diproses", "selesai"];
@@ -105,8 +105,12 @@ export default function ReportCard({ report, onClick }: ReportCardProps) {
           <span className="truncate max-w-[150px]">{report.lokasi || "Lokasi tidak tersedia"}</span>
         </div>
         <span className="text-[11px] text-slate-400 font-medium">
-          {new Date(report.createdAt).toLocaleDateString("id-ID", {
-            day: "numeric", month: "short", year: "numeric",
+          {new Date(
+            report.tanggal_kejadian || report.createdAt
+          ).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
           })}
         </span>
       </div>

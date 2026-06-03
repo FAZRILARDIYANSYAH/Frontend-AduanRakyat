@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "@/context/authContext";
+import "leaflet/dist/leaflet.css";
+
 import { Toaster } from "react-hot-toast";
+
+import SessionProviderWrapper from "@/components/providers/SessionProviderWrapper";
 
 export const metadata: Metadata = {
   title:
     "AduanRakyat – Platform Pengaduan Warga",
+
   description:
     "Laporkan masalah di sekitar Anda. Cepat, transparan, terselesaikan.",
 };
@@ -18,26 +22,23 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body>
-        <AuthProvider>
+        <SessionProviderWrapper>
           {children}
 
-          {/* GLOBAL TOAST */}
           <Toaster
             position="top-center"
             reverseOrder={false}
             toastOptions={{
               duration: 3000,
+
               style: {
-                borderRadius:
-                  "16px",
-                padding:
-                  "14px 18px",
-                fontWeight:
-                  "500",
+                borderRadius: "16px",
+                padding: "14px 18px",
+                fontWeight: "500",
               },
             }}
           />
-        </AuthProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );

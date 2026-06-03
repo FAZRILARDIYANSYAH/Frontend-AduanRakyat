@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/context/authContext";
+import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -10,7 +10,7 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
-import { motion } from "framer-motion";
+
 
 const NAV_ITEMS = [
   { label: "Dashboard",     icon: LayoutDashboard, href: "/homepage" },
@@ -19,17 +19,19 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
+const handleLogout = async () => {
+  await signOut({
+    callbackUrl: "/",
+  });
+};
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-100 h-screen sticky top-0 z-40 shrink-0">
+    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-100 h-screen sticky top-0 z-[999] shrink-0">
       {/* Logo */}
       <div className="p-6 border-b border-slate-100">
         <div className="flex items-center gap-3">

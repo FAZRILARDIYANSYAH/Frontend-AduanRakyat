@@ -27,30 +27,29 @@ export interface UserReport {
   status: StatusType;
   deskripsi: string;
   foto?: string;
+  tanggal_kejadian?: string;
   createdAt: string;
   updatedAt: string;
   tanggapan?: string;
   instansi?: string;
+  user_name?: string;
 }
 
-// ================= STATS TYPE =================
+// ================= STATS =================
 
 export interface UserStats {
   total: number;
   selesai: number;
   diproses: number;
   menunggu: number;
-  verifikasi: number; // ✅ tambah ini
+  verifikasi: number;
   ditolak: number;
 }
 
-// ================= NORMALIZE STATUS =================
+// ================= NORMALIZE =================
 
-function normalizeStatus(
-  status: string
-): StatusType {
-  const s =
-    status?.toLowerCase()?.trim();
+function normalizeStatus(status: string): StatusType {
+  const s = status?.toLowerCase()?.trim();
 
   switch (s) {
     case "proses":
@@ -78,146 +77,82 @@ function normalizeStatus(
 
 // ================= HOOK =================
 
-export function useLaporan() {
-  const [reports, setReports] =
-    useState<UserReport[]>([]);
+export function useLaporan(type: "mine" | "feed" = "mine") {
+  const [reports, setReports] = useState<UserReport[]>([]);
+  const [stats, setStats] = useState<UserStats>({
+    total: 0,
+    selesai: 0,
+    diproses: 0,
+    menunggu: 0,
+    verifikasi: 0,
+    ditolak: 0,
+  });
 
-  const [stats, setStats] =
-    useState<UserStats>({
-      total: 0,
-      selesai: 0,
-      diproses: 0,
-      menunggu: 0,
-      verifikasi: 0, // ✅ tambah ini
-      ditolak: 0,
-    });
-
-  const [loading, setLoading] =
-    useState<boolean>(true);
-
-  const [error, setError] =
-    useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // ================= FETCH =================
 
-  const fetchReports =
-    useCallback(async (): Promise<void> => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const res =
-          await api.get(
-            "/laporan"
-          );
+      const res = await api.get("/laporan", {
+        params: {
+          type, // 🔥 INI YANG PENTING
+        },
+      });
 
-        const rawData =
-          res.data ?? [];
+      const rawData = res.data ?? [];
 
-        const data: UserReport[] =
-          rawData.map(
-            (item: any) => ({
-              id: String(item.id),
-              judul:
-                item.judul_laporan,
-              kategori:
-                item.kategori,
-              lokasi:
-                item.lokasi,
+      const data: UserReport[] = rawData.map((item: any) => ({
+        id: String(item.id),
+        judul: item.judul_laporan,
+        kategori: item.kategori,
+        lokasi: item.lokasi,
+        status: normalizeStatus(item.status),
+        deskripsi: item.deskripsi,
+        foto: item.foto,
+        tanggal_kejadian: item.tanggal_kejadian,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at ?? item.created_at,
+        tanggapan: item.tanggapan,
+        instansi: item.instansi,
+        user_name: item.user_name,
+      }));
 
-              status:
-                normalizeStatus(
-                  item.status
-                ),
+      setReports(data);
 
-              deskripsi:
-                item.deskripsi,
-              foto:
-                item.foto,
-              createdAt:
-                item.created_at,
-              updatedAt:
-                item.updated_at ??
-                item.created_at,
-              tanggapan:
-                item.tanggapan,
-              instansi:
-                item.instansi,
-            })
-          );
+      // ================= STATS =================
 
-        setReports(data);
+      setStats({
+        total: data.length,
+        selesai: data.filter(r => r.status === "selesai").length,
+        diproses: data.filter(r => r.status === "diproses").length,
+        menunggu: data.filter(r => r.status === "menunggu").length,
+        verifikasi: data.filter(r => r.status === "verifikasi").length,
+        ditolak: data.filter(r => r.status === "ditolak").length,
+      });
 
-        // ================= STATS =================
-
-        setStats({
-          total: data.length,
-
-          selesai:
-            data.filter(
-              (r) =>
-                r.status ===
-                "selesai"
-            ).length,
-
-          diproses:
-            data.filter(
-              (r) =>
-                r.status ===
-                "diproses"
-            ).length,
-
-          menunggu:
-            data.filter(
-              (r) =>
-                r.status ===
-                "menunggu"
-            ).length,
-
-          verifikasi:
-            data.filter(
-              (r) =>
-                r.status ===
-                "verifikasi"
-            ).length, // ✅ ini yang bikin muncul 1
-
-          ditolak:
-            data.filter(
-              (r) =>
-                r.status ===
-                "ditolak"
-            ).length,
-        });
-      } catch (err: any) {
-        console.log(
-          "Fetch laporan error:",
-          err
-        );
-
-        setError(
-          err?.response?.data
-            ?.message ||
-            "Gagal memuat laporan"
-        );
-      } finally {
-        setLoading(false);
-      }
-    }, []);
-
-  // ================= FIRST LOAD =================
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message || "Gagal memuat laporan"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [type]);
 
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
-
-  // ================= RETURN =================
 
   return {
     reports,
     stats,
     loading,
     error,
-    refetch:
-      fetchReports,
+    refetch: fetchReports,
   };
 }

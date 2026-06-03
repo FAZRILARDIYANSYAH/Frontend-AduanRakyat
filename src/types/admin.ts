@@ -9,6 +9,7 @@ export interface AdminLaporan {
   tanggapan: string | null;
   tanggapan_at: string | null;
   created_at: string;
+  tanggal_kejadian: string | null;
   user_name?: string;
 }
 
@@ -24,7 +25,33 @@ export interface AdminStats {
   selesai: number;
   verifikasi: number;
   ditolak: number;
+
+  // optional kalau dipakai dashboard chart
+  monthly?: {
+    total?: { bulan: string; val: number }[];
+    verifikasi?: { bulan: string; val: number }[];
+    diproses?: { bulan: string; val: number }[];
+    selesai?: { bulan: string; val: number }[];
+    ditolak?: { bulan: string; val: number }[];
+  };
+
+  sparkline?: {
+    total?: { v: number }[];
+    verifikasi?: { v: number }[];
+    diproses?: { v: number }[];
+    selesai?: { v: number }[];
+    ditolak?: { v: number }[];
+  };
 }
 
-export type AdminTab = "dashboard" | "laporan" | "kategori";
-export type StatusType = "menunggu" | "verifikasi" | "diproses" | "selesai" | "ditolak";
+export type AdminTab =
+  | "dashboard"
+  | "laporan"
+  | "kategori";
+
+export type StatusType =
+  | "menunggu"
+  | "verifikasi"
+  | "diproses"
+  | "selesai"
+  | "ditolak";

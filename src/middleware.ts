@@ -1,148 +1,111 @@
-import {NextResponse} from "next/server";
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-import type {NextRequest} from "next/server";
+export default withAuth(
+  function middleware(req) {
+    const token =
+      req.nextauth.token;
 
-export function middleware(request: NextRequest) {
-  const {
-    pathname,
-  } = request.nextUrl;
+    const path =
+      req.nextUrl.pathname;
 
-  const token =
-    request.cookies.get(
-      "token"
-    )?.value;
-
-  const role =
-    request.cookies.get(
-      "role"
-    )?.value;
-
-  // ── PROTECTED ROUTE ──
-  const protectedRoutes =
-    [
-      "/homepage",
-      "/profile",
-      "/admin",
-      "/superadmin",
-    ];
-
-  const isProtected =
-    protectedRoutes.some(
-      (path) =>
-        pathname.startsWith(
-          path
-        )
-    );
-
-  // belum login
-  if (
-    isProtected &&
-    !token
-  ) {
-    return NextResponse.redirect(
-      new URL(
-        "/auth/login",
-        request.url
-      )
-    );
-  }
-
-  // ── AUTH ROUTE ──
-  const authRoutes =
-    [
-      "/auth/login",
-      "/auth/register",
-    ];
-
-  const isAuthRoute =
-    authRoutes.some(
-      (path) =>
-        pathname.startsWith(
-          path
-        )
-    );
-
-  // kalau sudah login
-  if (
-    isAuthRoute &&
-    token
-  ) {
-    // redirect sesuai role
-    if (
-      role ===
-      "superadmin"
-    ) {
+    // BELUM LOGIN
+    if (!token) {
       return NextResponse.redirect(
         new URL(
-          "/superadmin/dashboard",
-          request.url
+          "/auth/login",
+          req.url
         )
       );
     }
 
-    if (
-      role ===
-      "admin"
-    ) {
-      return NextResponse.redirect(
-        new URL(
-          "/admin/dashboard",
-          request.url
+    const role =
+      token.role as string;
+
+    // ================= USER =================
+    if (role === "user") {
+      // user gaboleh admin/superadmin
+      if (
+        path.startsWith(
+          "/admin"
+        ) ||
+        path.startsWith(
+          "/superadmin"
         )
-      );
+      ) {
+        return NextResponse.redirect(
+          new URL(
+            "/homepage",
+            req.url
+          )
+        );
+      }
     }
 
-    return NextResponse.redirect(
-      new URL(
-        "/homepage",
-        request.url
-      )
-    );
-  }
+    // ================= ADMIN =================
+    if (role === "admin") {
+      // admin gaboleh homepage
+      if (
+        path.startsWith(
+          "/homepage"
+        )
+      ) {
+        return NextResponse.redirect(
+          new URL(
+            "/admin/dashboard",
+            req.url
+          )
+        );
+      }
 
-  // ── ADMIN ONLY ──
-  if (
-    pathname.startsWith(
-      "/admin"
-    ) &&
-    role !==
-      "admin"
-  ) {
-    return NextResponse.redirect(
-      new URL(
-        "/homepage",
-        request.url
-      )
-    );
-  }
+      // admin gaboleh superadmin
+      if (
+        path.startsWith(
+          "/superadmin"
+        )
+      ) {
+        return NextResponse.redirect(
+          new URL(
+            "/admin/dashboard",
+            req.url
+          )
+        );
+      }
+    }
 
-  // ── SUPERADMIN ONLY ──
-  if (
-    pathname.startsWith(
-      "/superadmin"
-    ) &&
-    role !==
-      "superadmin"
-  ) {
-    return NextResponse.redirect(
-      new URL(
-        "/homepage",
-        request.url
-      )
-    );
-  }
+    // ================= SUPERADMIN =================
+    if (
+      role === "superadmin"
+    ) {
+      // superadmin gaboleh homepage
+      if (
+        path.startsWith(
+          "/homepage"
+        )
+      ) {
+        return NextResponse.redirect(
+          new URL(
+            "/superadmin/dashboard",
+            req.url
+          )
+        );
+      }
+    }
 
-  return NextResponse.next();
-}
-
-export const config =
+    return NextResponse.next();
+  },
   {
-    matcher: [
-      "/homepage/:path*",
-      "/profile/:path*",
-      "/admin/:path*",
-      "/superadmin/:path*",
-      "/auth/login",
-      "/auth/register",
-    ],
-  };
+    callbacks: {
+      authorized: () => true,
+    },
+  }
+);
+
+export const config = {
+  matcher: [
+    "/homepage/:path*",
+    "/profile/:path*",
+    "/admin/:path*",
+    "/superadmin/:path*",
+  ],
+};

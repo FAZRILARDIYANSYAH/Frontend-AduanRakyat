@@ -109,8 +109,10 @@ export default function DashboardSection({
   userName,
   onBuat,
 }: DashboardSectionProps) {
-  const firstName =
-    userName?.split(" ")[0] || "User";
+const firstName =
+  userName?.split(" ")[0] || "User";
+
+console.log(userName);
 
   return (
     <div className="space-y-6 mb-8">
