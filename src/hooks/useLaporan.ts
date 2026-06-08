@@ -113,7 +113,7 @@ export function useLaporan(type: "mine" | "feed" = "mine") {
         lokasi: item.lokasi,
         status: normalizeStatus(item.status),
         deskripsi: item.deskripsi,
-        foto: item.foto,
+        foto: item.foto || null,
         tanggal_kejadian: item.tanggal_kejadian,
         createdAt: item.created_at,
         updatedAt: item.updated_at ?? item.created_at,

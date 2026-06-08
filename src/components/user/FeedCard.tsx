@@ -11,8 +11,12 @@ import {
   Loader2,
   Eye,
   Hourglass,
+  MapPin,
+  Clock,
+  ThumbsUp,
 } from "lucide-react";
 import api from "@/lib/axios";
+import { useSession } from "next-auth/react";
 
 interface Props {
   report: any;
@@ -30,37 +34,37 @@ const STATUS_CONFIG: Record<
 > = {
   selesai: {
     label: "Selesai",
-    badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    badgeClass: "bg-emerald-100 text-emerald-700",
     dotClass: "bg-emerald-500",
     stripeClass: "bg-gradient-to-b from-emerald-400 to-emerald-500",
     icon: <CheckCircle2 size={11} />,
   },
   ditolak: {
     label: "Ditolak",
-    badgeClass: "bg-red-50 text-red-600 border border-red-200",
+    badgeClass: "bg-red-100 text-red-600",
     dotClass: "bg-red-500",
     stripeClass: "bg-gradient-to-b from-red-400 to-red-500",
     icon: <XCircle size={11} />,
   },
   diproses: {
     label: "Diproses",
-    badgeClass: "bg-violet-50 text-violet-700 border border-violet-200",
-    dotClass: "bg-violet-500",
-    stripeClass: "bg-gradient-to-b from-violet-400 to-violet-600",
+    badgeClass: "bg-indigo-100 text-indigo-700",
+    dotClass: "bg-indigo-500",
+    stripeClass: "bg-gradient-to-b from-indigo-400 to-indigo-600",
     icon: <Loader2 size={11} />,
   },
   menunggu: {
     label: "Menunggu",
-    badgeClass: "bg-amber-50 text-amber-700 border border-amber-200",
+    badgeClass: "bg-amber-100 text-amber-700",
     dotClass: "bg-amber-400",
     stripeClass: "bg-gradient-to-b from-amber-400 to-amber-500",
     icon: <Hourglass size={11} />,
   },
   verifikasi: {
-    label: "Verifikasi",
-    badgeClass: "bg-sky-50 text-sky-700 border border-sky-200",
-    dotClass: "bg-sky-400",
-    stripeClass: "bg-gradient-to-b from-sky-400 to-sky-500",
+    label: "Diverifikasi",
+    badgeClass: "bg-amber-100 text-amber-700",
+    dotClass: "bg-amber-400",
+    stripeClass: "bg-gradient-to-b from-amber-400 to-amber-500",
     icon: <Eye size={11} />,
   },
 };
@@ -98,13 +102,17 @@ function timeAgo(dateStr: string) {
 }
 
 export default function FeedCard({ report }: Props) {
+  const { data: session } = useSession();
+  const currentUserId = Number(session?.user?.id);
+
   const [comments, setComments] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
 
   const statusKey = report.status?.toLowerCase() || "verifikasi";
-  const status = STATUS_CONFIG[statusKey];
+  const status = STATUS_CONFIG[statusKey] ?? STATUS_CONFIG["verifikasi"];
 
   const loadComments = async () => {
     try {
@@ -134,15 +142,54 @@ export default function FeedCard({ report }: Props) {
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200/80 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50">
+    <>
+      {/* ── Lightbox Modal ── */}
+      {lightbox && report.foto && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setLightbox(false)}
+        >
+          <button
+            onClick={() => setLightbox(false)}
+            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+          >
+            <XCircle size={22} />
+          </button>
+          <img
+            src={report.foto}
+            alt="foto laporan full"
+            className="max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
-      {/* Status stripe */}
-      <div className={`absolute left-0 top-0 bottom-0 w-[3.5px] ${status.stripeClass}`} />
+    <div className="group bg-white rounded-[2rem] border border-slate-100 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-300 cursor-pointer overflow-hidden">
 
-      <div className="px-5 pt-5 pb-4 pl-[22px]">
+      {/* ── Foto / Image area ── */}
+      <div
+        className={`w-full h-44 bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden relative ${report.foto ? "cursor-zoom-in" : ""}`}
+        onClick={() => report.foto && setLightbox(true)}
+      >
+        {report.foto ? (
+          <img
+            src={report.foto}
+            alt="foto laporan"
+            className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth={1.5} className="w-10 h-10">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        )}
+      </div>
 
-        {/* ── Header ── */}
-        <div className="flex items-start justify-between gap-3">
+      <div className="p-6">
+
+        {/* ── User + Status ── */}
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
             <div
               className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getAvatarGradient(
@@ -155,47 +202,54 @@ export default function FeedCard({ report }: Props) {
               <p className="font-semibold text-[14px] text-slate-900 truncate leading-tight">
                 {report.user_name}
               </p>
-              <p className="text-[12px] text-slate-400 mt-0.5">
-                {timeAgo(report.created_at)}
+              <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider font-semibold">
+                {report.kategori || report.category || "Laporan"}
               </p>
             </div>
           </div>
 
-          {/* Badge */}
-          <span
-            className={`flex items-center gap-1.5 text-[11.5px] font-semibold px-2.5 py-1.5 rounded-lg shrink-0 ${status.badgeClass}`}
-          >
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0 ${status.badgeClass}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${status.dotClass}`} />
             {status.label}
           </span>
         </div>
 
-        {/* ── Divider ── */}
-        <div className="h-px bg-slate-100 my-3.5" />
+        {/* ── Judul & Deskripsi ── */}
+        <h3 className="font-bold text-slate-900 text-base leading-snug mb-1 group-hover:text-indigo-700 transition-colors line-clamp-2">
+          {report.judul_laporan}
+        </h3>
+        <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2 mb-4">
+          {report.deskripsi}
+        </p>
 
-        {/* ── Content ── */}
-        <div>
-          <h2 className="font-bold text-[15px] text-slate-900 truncate leading-snug">
-            {report.judul_laporan}
-          </h2>
-          <p className="text-[13px] text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
-            {report.deskripsi}
-          </p>
-        </div>
-
-        {/* ── Foto ── */}
-        {report.foto && (
-          <div className="mt-3.5 rounded-xl overflow-hidden border border-slate-100">
-            <img
-              src={report.foto}
-              alt="foto laporan"
-              className="w-full h-[160px] object-cover transition duration-300 group-hover:scale-[1.02]"
-            />
+        {/* ── Tanggapan Instansi ── */}
+        {report.tanggapan && (
+          <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3">
+            <p className="text-xs font-semibold text-blue-700 mb-1">Tanggapan Instansi</p>
+            <p className="text-[13px] text-slate-700 leading-relaxed line-clamp-2">
+              {report.tanggapan}
+            </p>
           </div>
         )}
 
-        {/* ── Comment toggle ── */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100">
+        {/* ── Footer: Lokasi + Waktu + Komentar ── */}
+        <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-50 pt-4">
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {report.lokasi || report.location || "—"}
+          </span>
+          <span className="flex items-center gap-3">
+          </span>
+          <div>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {timeAgo(report.created_at)}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Comment Toggle ── */}
+        <div className="mt-3.5 pt-3 border-t border-slate-100">
           <button
             onClick={() => setOpen(!open)}
             className="flex items-center gap-1.5 text-[13px] font-medium text-slate-400 hover:text-indigo-600 transition-colors"
@@ -208,7 +262,7 @@ export default function FeedCard({ report }: Props) {
           </button>
         </div>
 
-        {/* ── Comment section ── */}
+        {/* ── Comment Section ── */}
         {open && (
           <div className="mt-3.5 space-y-3 border-t border-slate-100 pt-3.5">
             <div className="max-h-44 overflow-y-auto space-y-2 pr-0.5">
@@ -217,19 +271,25 @@ export default function FeedCard({ report }: Props) {
                   Belum ada komentar
                 </p>
               ) : (
-                comments.map((c) => (
-                  <div
-                    key={c.id}
-                    className="bg-slate-50 rounded-xl px-3.5 py-2.5"
-                  >
-                    <p className="text-[11.5px] font-bold text-indigo-600 mb-0.5">
-                      {c.user_name}
-                    </p>
-                    <p className="text-[13px] text-slate-600 leading-relaxed">
-                      {c.comment}
-                    </p>
-                  </div>
-                ))
+                comments.map((c) => {
+                  const isMine = Number(c.user_id) === currentUserId;
+                  return (
+                    <div key={c.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-[80%] px-4 py-3 rounded-2xl shadow-sm ${
+                          isMine
+                            ? "bg-indigo-600 text-white rounded-br-md"
+                            : "bg-slate-100 text-slate-700 rounded-bl-md"
+                        }`}
+                      >
+                        <p className={`text-[11px] font-semibold mb-1 ${isMine ? "text-indigo-100" : "text-indigo-600"}`}>
+                          {isMine ? "Anda" : c.name}
+                        </p>
+                        <p className="text-[13px] leading-relaxed">{c.comment}</p>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
 
@@ -255,7 +315,9 @@ export default function FeedCard({ report }: Props) {
             </div>
           </div>
         )}
+
       </div>
     </div>
+    </>
   );
 }

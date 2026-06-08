@@ -95,7 +95,11 @@ export default function MonitoringLaporan() {
                     {/* Thumbnail Kecil di Kiri */}
                     <div className="w-16 h-16 rounded-lg bg-slate-50 border border-slate-100 shrink-0 overflow-hidden flex items-center justify-center">
                       {item.foto ? (
-                        <img src={item.foto} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <img
+                          src={item.foto}
+                          alt=""
+                          className="w-full h-full object-contain bg-slate-50 p-1 group-hover:scale-105 transition-transform"
+                        />
                       ) : (
                         <ImageOff className="w-4 h-4 text-slate-300" />
                       )}
@@ -147,9 +151,14 @@ export default function MonitoringLaporan() {
               >
                 {/* Image Section (Mewah) */}
                 {selectedItem.foto ? (
-                  <div className="w-full h-48 bg-slate-900 relative border-b border-slate-100">
-                    <img src={selectedItem.foto} alt="Detail" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-9s00/40 via-transparent to-transparent" />
+                  <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center justify-center p-5">
+                  <div className="w-full max-w-[320px] h-[220px] rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+                    <img
+                      src={selectedItem.foto}
+                      alt="Detail"
+                      className="w-full h-full object-contain p-2"
+                    />
+                  </div>
                   </div>
                 ) : (
                   <div className="w-full h-32 bg-slate-50 border-b border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 text-slate-400">

@@ -288,30 +288,25 @@ export default function ReportDetailPanel({
                     <div>
                     <SectionLabel>Foto Lampiran</SectionLabel>
 
-                    {Array.isArray(report.foto) ? (
-                        <div className="grid grid-cols-3 gap-2">
-                        {report.foto.map((url: string, i: number) => (
-                            <div
-                            key={i}
-                            className="aspect-square rounded-xl overflow-hidden border border-slate-100"
-                            >
-                            <img
-                                src={url}
-                                alt={`Foto ${i + 1}`}
-                                className="w-full h-full object-cover"
-                            />
+                      {report.foto && (
+                        <>
+                          <Divider />
+
+                          <div>
+                            <SectionLabel>
+                              Foto Lampiran
+                            </SectionLabel>
+
+                            <div className="rounded-2xl overflow-hidden border border-slate-100">
+                              <img
+                                src={report.foto}
+                                alt="Foto laporan"
+                                className="w-full h-56 object-cover"
+                              />
                             </div>
-                        ))}
-                        </div>
-                    ) : (
-                        <div className="rounded-2xl overflow-hidden border border-slate-100">
-                        <img
-                            src={report.foto}
-                            alt="Foto laporan"
-                            className="w-full h-56 object-cover"
-                        />
-                        </div>
-                    )}
+                          </div>
+                        </>
+                      )}
                     </div>
                 </>
                 )}

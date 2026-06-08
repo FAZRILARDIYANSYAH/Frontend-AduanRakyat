@@ -9,26 +9,25 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
+  User,
 } from "lucide-react";
 
-
 const NAV_ITEMS = [
-  { label: "Dashboard",     icon: LayoutDashboard, href: "/homepage" },
-  { label: "Laporan Saya",  icon: ClipboardList,   href: "/laporan" },
-  { label: "Buat Laporan",  icon: Plus,            href: "/buat-laporan" },
+  { label: "Dashboard",    icon: LayoutDashboard, href: "/homepage"     },
+  { label: "Laporan Saya", icon: ClipboardList,   href: "/laporan"      },
+  { label: "Buat Laporan", icon: Plus,            href: "/buat-laporan" },
+  { label: "Profil Saya",  icon: User,            href: "/profile"       }, // ← tambahan
 ];
 
 export default function Sidebar() {
   const { data: session } = useSession();
-  const user = session?.user;
-  const router = useRouter();
+  const user     = session?.user;
+  const router   = useRouter();
   const pathname = usePathname();
 
-const handleLogout = async () => {
-  await signOut({
-    callbackUrl: "/",
-  });
-};
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
+  };
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-100 h-screen sticky top-0 z-[999] shrink-0">
@@ -47,15 +46,19 @@ const handleLogout = async () => {
 
       {/* User Info */}
       <div className="mx-4 mt-5">
-        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-4 border border-indigo-100/60">
+        <div
+          className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-4 border border-indigo-100/60 cursor-pointer hover:shadow-md transition-all"
+          onClick={() => router.push("/profil")}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-200 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-content: center text-white font-black text-sm shadow-md shadow-indigo-200 shrink-0 flex items-center justify-center">
               {user?.name?.slice(0, 2)?.toUpperCase() || "??"}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-bold text-slate-800 text-sm truncate leading-snug">{user?.name || "Pengguna"}</p>
               <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email || ""}</p>
             </div>
+            <ChevronRight className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
           </div>
         </div>
       </div>
@@ -64,7 +67,7 @@ const handleLogout = async () => {
       <nav className="flex-1 px-4 mt-6 space-y-1">
         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest px-3 mb-3">Menu</p>
         {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
+          const Icon   = item.icon;
           const active = pathname === item.href;
           return (
             <button
@@ -76,7 +79,13 @@ const handleLogout = async () => {
                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${active ? "text-white" : "text-slate-400 group-hover:text-indigo-500 transition-colors"}`} />
+              <Icon
+                className={`w-4 h-4 shrink-0 ${
+                  active
+                    ? "text-white"
+                    : "text-slate-400 group-hover:text-indigo-500 transition-colors"
+                }`}
+              />
               <span className="flex-1 text-left">{item.label}</span>
               {active && <ChevronRight className="w-3.5 h-3.5 text-white/60" />}
             </button>

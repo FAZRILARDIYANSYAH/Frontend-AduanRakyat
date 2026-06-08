@@ -102,7 +102,7 @@ export default function AduCepatLandingPage() {
 
       {/* ── ASLI: Navigation ─────────────────────────────────────────────────── */}
    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-  <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+  <div className="w-full px-12 h-20 flex items-center justify-between">
     {/* Logo */}
     <div className="flex items-center gap-2 cursor-pointer group">
       <div className="w-16 h-16 relative group-hover:scale-105 transition-transform">

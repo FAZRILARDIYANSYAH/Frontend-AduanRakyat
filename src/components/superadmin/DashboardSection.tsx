@@ -439,63 +439,83 @@ const firstName =
             </ResponsiveContainer>
           </div>
 
-          {/* Laporan Terbaru — persis sama dengan admin */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm min-w-0">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-800">Laporan Terbaru</p>
-                <p className="text-xs text-slate-400 mt-0.5">5 laporan masuk terakhir</p>
+            {/* ── Laporan Terbaru (read-only preview) ── */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm min-w-0 h-[165px] flex flex-col">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">
+                    Laporan Terbaru
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    5 laporan masuk terakhir
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {loadingStats ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : laporan.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                <FileText className="w-8 h-8 mb-2 opacity-40" />
-                <p className="text-sm">Belum ada laporan masuk</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-50">
-                {laporan.slice(0, 5).map((item, i) => {
-                  const catCfg    = getCategoryIcon(item.kategori);
-                  const CatIcon   = catCfg.icon;
-                  const statusCfg = STATUS_CONFIG[item.status?.toLowerCase()] ?? STATUS_CONFIG.menunggu;
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05, duration: 0.3 }}
-                      className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-                    >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${catCfg.bg}`}>
-                        <CatIcon className={`w-4 h-4 ${catCfg.color}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-700 truncate capitalize">
-                          {item.judul_laporan}
-                        </p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                          {item.kategori} · #{item.id} · {item.user_name ?? "—"}
-                        </p>
-                      </div>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold flex-shrink-0 ${statusCfg.color}`}
+              {loadingStats? (
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 bg-slate-50 rounded-xl animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : laporan.length === 0 ? (
+                <div className="flex flex-col items-center justify-center flex-1 text-slate-400">
+                  <FileText className="w-8 h-8 mb-2 opacity-40" />
+                  <p className="text-sm">Belum ada laporan masuk</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50 overflow-y-auto pr-1 max-h-[90px]">
+                  {laporan.slice(0, 5).map((item, i) => {
+                    const catCfg = getCategoryIcon(item.kategori);
+                    const CatIcon = catCfg.icon;
+                    const statusCfg =
+                      STATUS_CONFIG[item.status?.toLowerCase()] ??
+                      STATUS_CONFIG.menunggu;
+
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05, duration: 0.3 }}
+                        className="flex items-center gap-3 py-4 first:pt-0"
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
-                        {statusCfg.label}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                        {/* Category icon */}
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${catCfg.bg}`}
+                        >
+                          <CatIcon className={`w-4 h-4 ${catCfg.color}`} />
+                        </div>
+
+                        {/* Title + meta */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-700 truncate capitalize">
+                            {item.judul_laporan}
+                          </p>
+                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                            {item.kategori} · #{item.id} ·{" "}
+                            {item.user_name ?? "—"}
+                          </p>
+                        </div>
+
+                        {/* Status badge */}
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold flex-shrink-0 ${statusCfg.color}`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`}
+                          />
+                          {statusCfg.label}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
         </div>
 
         {/* ── Kolom Kanan: Status Laporan + Target Bulanan ── */}

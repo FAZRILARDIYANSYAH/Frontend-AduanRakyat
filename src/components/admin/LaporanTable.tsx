@@ -122,7 +122,11 @@ function UpdateModal({ laporan, onClose, onSave }: UpdateModalProps) {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3" /> Foto Bukti
               </p>
-              <img src={laporan.foto} alt="Bukti" className="w-full h-40 object-cover rounded-xl border border-slate-100" />
+              <img
+                src={laporan.foto}
+                alt="Bukti"
+                className="w-full max-h-[400px] object-contain rounded-xl border border-slate-100 bg-slate-50"
+              />
             </div>
           )}
 

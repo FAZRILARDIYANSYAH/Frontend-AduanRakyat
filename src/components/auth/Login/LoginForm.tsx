@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
 import { signIn, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 function Field({ label, name, type = "text", value, onChange, placeholder, error, icon, rightSlot }: {
   label: string; name: string; type?: string; value: string;
@@ -34,6 +35,7 @@ function Field({ label, name, type = "text", value, onChange, placeholder, error
 }
 
 export default function LoginForm() {
+  const router = useRouter();
   const [data, setData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -207,13 +209,19 @@ const submit = async (
         ))}
       </div>
 
-      <p style={{ textAlign: "center", fontSize: 13, color: "#64748b" }}>
+     <p style={{ textAlign: "center", fontSize: 13, color: "#64748b" }}>
         Belum punya akun?{" "}
-        {/* Pakai router.push supaya layout mendeteksi perubahan URL dan animasi terpicu */}
         <button
-          onClick={() => (window.location.href = "/auth/register")}
+          onClick={() => router.push("/auth/register")}
           type="button"
-          style={{ color: "#2563eb", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontSize: 13 }}
+          style={{
+            color: "#2563eb",
+            fontWeight: 700,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 13,
+          }}
         >
           Daftar Sekarang
         </button>
